@@ -5,11 +5,13 @@ import SignIn from "./pages/SignIn";
 import ForgotPassword from "./pages/ForgotPassword";
 import SignUp from "./pages/SignUp";
 import Offers from "./pages/Offers";
+import Header from "./components/Header";
 
 function App() {
   return (
     <div>
       <Router>
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
@@ -21,7 +23,7 @@ function App() {
         </Routes>
       </Router>
     </div>
-  );
+  ); 
 }
 
 export default App;
