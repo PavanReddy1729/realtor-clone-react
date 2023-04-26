@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {db} from "../firebase";
+import {setDoc,doc,serverTimestamp} from  "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+
 
 export default function SignIn() {
   const [ShowPassword, setShowPassword] = useState(false);
@@ -12,12 +19,38 @@ export default function SignIn() {
     password: "",
   });
   const { name, email, password } = formData;
+  const navigate = useNavigate();
+
 
   function onChange(e) {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  }
+
+  async function onSubmit(e){
+    e.preventDefault();
+
+    try {
+      const auth = getAuth()
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      updateProfile(auth.currentUser,{
+        displayName:name
+      })
+      const user = userCredential.user;
+      const formDataCopy = {...formData}
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+
+      await setDoc(doc(db, "users", user.uid), formDataCopy)
+      navigate("/");
+      toast.success("Signup was success");
+      
+    } catch (error) {
+      toast.error("something went wrong with the registration");
+    }
+
   }
 
   return (
@@ -32,7 +65,7 @@ export default function SignIn() {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               className="mb-6 w-full px-4 py-2 text-xl text-gray-700 bg-white border-gray-300 rounded
                         transition ease-in-out"
@@ -96,7 +129,7 @@ export default function SignIn() {
               type="submit"
               className="w-full bg-blue-600 text-white px-7 py-3 text-sm font-medium uppercase rounded shadow-md hover:bg-blue-700 transition duration-150 ease-in-out hover:shadow-lg active:bg-blue-800"
             >
-              Sign in
+              Sign Up
             </button>
             <div className="flex items-center my-4 before:border-t before:flex-1 before:border-gray-300 after:border-t after:flex-1 after:border-gray-300 ">
               <p className="text-center font-semibold mx-4">OR</p>
